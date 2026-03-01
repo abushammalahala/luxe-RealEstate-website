@@ -1435,7 +1435,9 @@
                 box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
 
             }
-
+            .cta-btn.ul{{
+                        display:none;
+            }
             /*************** Responsive **********************************************/
 
 
@@ -1530,9 +1532,12 @@
                 }
 
 
-                .cta-btn {
+                .cta-btn.login {
                     display: none;
                 }
+                        .cta-btn.ul{
+                    display: grid;
+                 }
 
                 .info #propertyTitle {
                     font-size: 1.6rem
@@ -2169,4 +2174,5 @@ h1{
                     display: flex;
                     flex-direction: row;
                 }
+
             }

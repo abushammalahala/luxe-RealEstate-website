@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link href="index.css" rel="stylesheet">
+  <title>Authentication - LuxeEstates</title>
+</head>
+
+<body>
+  <header>
+    <a href="#" class="logo">
+      <div class="logo-icon">🏠</div>
+      Luxe<span>Estates</span>
+    </a>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="properties.html">Properties</a></li>
+        <li><a href="#map">Map</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <a href="auth.html" class="cta-btn">login / Register</a>
+    </nav>
+    <div class="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </header>
+  <div class="auth-section">
+    <div class="auth-container">
+      <!-- Register -->
+      <div id="registerForm">
+        <h2>Register</h2>
+        <input type="text" id="regUsername" placeholder="Username" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
+        <input type="file" id="regImageFile" accept="image/*">
+        <button id="registerBtn">Register</button>
+        <div class="switch" id="switchToLogin">Already have an account? Login</div>
+      </div>
+
+      <!-- Login -->
+      <div id="loginForm" style="display:none;">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button id="loginBtn">Login</button>
+        <div class="switch" id="switchToRegister">Don't have an account? Register</div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>LuxeEstates</h4>
+        <p>Your trusted partner in finding the perfect property. Experience the future of real estate with our
+          innovative 3D technology.</p>
+        <div class="footer-social">
+          <a href="#">📘</a>
+          <a href="#">📸</a>
+          <a href="#">🐦</a>
+          <a href="#">in</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#hero">Home</a></li>
+          <li><a href="#properties">Properties</a></li>
+          <li><a href="#map">Map View</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Property Types</h4>
+        <ul>
+          <li><a href="#">Houses</a></li>
+          <li><a href="#">Apartments</a></li>
+          <li><a href="#">Villas</a></li>
+          <li><a href="#">Condos</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact Info</h4>
+        <ul>
+          <li>📍 123 Luxury Lane, CA 90210</li>
+          <li>📞 +1 (555) 123-4567</li>
+          <li>✉️ info@luxeestates.com</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 LuxeEstates. All rights reserved. Made with ❤️</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+      authDomain: "realestate-5462f.firebaseapp.com",
+      projectId: "realestate-5462f",
+      storageBucket: "realestate-5462f.appspot.com",
+      messagingSenderId: "980302993047",
+      appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ================= Toggle Forms =================
+    function toggleForms() {
+      const registerForm = document.getElementById("registerForm");
+      const loginForm = document.getElementById("loginForm");
+
+      registerForm.style.display =
+        registerForm.style.display === "none" ? "block" : "none";
+
+      loginForm.style.display =
+        loginForm.style.display === "none" ? "block" : "none";
+    }
+
+    document.getElementById("switchToLogin").addEventListener("click", toggleForms);
+    document.getElementById("switchToRegister").addEventListener("click", toggleForms);
+
+    // ================= Register =================
+    document.getElementById("registerBtn").addEventListener("click", async () => {
+
+      const username = document.getElementById("regUsername").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const imageFile = document.getElementById("regImageFile").files[0];
+
+      if (!username || !email || !password) {
+        alert("Fill all fields!");
+        return;
+      }
+
+      try {
+        // Create user in Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Convert image to Base64
+        let imageBase64 = "";
+        if (imageFile) {
+          imageBase64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = err => reject(err);
+            reader.readAsDataURL(imageFile);
+          });
+        }
+
+        // Save user in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          username,
+          email,
+          image: imageBase64,
+          role: "user", // default role
+          createdAt: new Date().toISOString()
+        });
+
+        alert("Registered successfully!");
+
+        // Redirect after register
+        window.location.href = "user-dashboard.html";
+
+      } catch (error) {
+        console.error(error);
+        alert(error.message);
+      }
+    });
+
+    // ================= Login =================
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      if (!email || !password) {
+        alert("Fill all fields!");
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Get user role from Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+
+          if (data.role === "admin") {
+            window.location.href = "admin-dashboard.html";
+          } else {
+            window.location.href = "user-dashboard.html";
+          }
+        } else {
+          alert("User data not found!");
+        }
+
+      } catch (error) {
+        console.error(error);
+        alert("Wrong email or password");
+      }
+    });
+  </script>
+  <script src="js/header.js"></script>
+</body>
+
+</html>

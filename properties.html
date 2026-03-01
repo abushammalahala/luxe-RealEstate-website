@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeEstates - Properties</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="index.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🏠</div>
+            Luxe<span>Estates</span>
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html#hero">Home</a></li>
+                <li><a href="index.html#properties">Properties</a></li>
+                <li><a href="index.html#map">Map</a></li>
+   <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <a href="auth.html" class="cta-btn">login / Register</a>
+        </nav>
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Categories Section -->
+    <section class="categories-section" style="margin-top: 80px;">
+        <div class="categories-container">
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="apartment">Apartment</button>
+                        <button class="category-btn" data-category="house">House</button>
+            <button class="category-btn" data-category="condo">Condo</button>
+
+            <button class="category-btn" data-category="villa">Villa</button>
+            <button class="category-btn" data-category="land">Land</button>
+            <button class="category-btn" data-category="office">Office</button>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section class="properties-section" id="properties">
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Properties will be rendered here -->
+            </div>
+        </div>
+    </section>
+    
+   
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+    authDomain: "realestate-5462f.firebaseapp.com",
+    projectId: "realestate-5462f",
+    storageBucket: "realestate-5462f.firebasestorage.app",
+    messagingSenderId: "980302993047",
+    appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // جلب جميع العقارات
+  async function getPropertiesFromFirebase() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "properties"));
+      const properties = [];
+      querySnapshot.forEach((doc) => {
+        properties.push({ id: doc.id, ...doc.data() });
+      });
+      return properties;
+    } catch (e) {
+      console.error("Error fetching properties:", e);
+      return []; // دائماً أرجع مصفوفة فارغة عند الخطأ
+    }
+  }
+
+  
+  // تحميل العقارات عند بدء الصفحة
+  document.addEventListener("DOMContentLoaded", async () => {
+    window.properties = await getPropertiesFromFirebase();
+    window.renderProperties(window.properties);
+
+    // التصفية بعد تحميل البيانات
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const category = this.getAttribute('data-category');
+        const filtered = category === "all" ? window.properties : window.properties.filter(p => p.type === category);
+        window.renderProperties(filtered);
+      });
+    });
+  });
+</script>
+<script src="js/inde.js" defer></script>
+<script src="js/header.js"></script>
+
+</body>
+</html>

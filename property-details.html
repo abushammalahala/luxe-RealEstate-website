@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeEstates - Property Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="index.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="#" class="logo">
+            <div class="logo-icon">🏠</div>
+            Luxe<span>Estates</span>
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="properties.html">Properties</a></li>
+                <li><a href="#map">Map</a></li>
+   <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <a href="auth.html" class="cta-btn">login / Register</a>
+        </nav>
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+<section class="property-details-page">
+    <div class="main">
+        <img id="propertyImage" alt="Property Image">
+        <div class="right">
+            <div class="info">
+                <h1 id="propertyTitle"></h1>
+                <div class="main p-l">
+                    <div id="propertyPrice"></div>
+                    <div class="icon-location">
+                        <span>📍</span>
+                        <div id="propertyLocation"></div>
+                    </div>
+                </div>
+            </div>
+            <p id="propertyDesc"></p>
+            <p class="Services">Amenities & Services</p>
+            <p id="propertyServices"></p>
+        </div>
+    </div>
+
+    <div class="details">
+        <span id="propertyType"></span>
+        <span id="propertyBeds"></span>
+        <span id="propertyBaths"></span>
+        <span id="propertyGarage"></span>
+        <span id="propertyPool"></span>
+        <span id="propertySqft"></span>
+    </div>
+    <a href="contact.html"> Contact us</a>
+</section>
+  <footer>
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4>LuxeEstates</h4>
+                <p>Your trusted partner in finding the perfect property. Experience the future of real estate with our
+                    innovative 3D technology.</p>
+                <div class="footer-social">
+                    <a href="#">📘</a>
+                    <a href="#">📸</a>
+                    <a href="#">🐦</a>
+                    <a href="#">in</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#hero">Home</a></li>
+                    <li><a href="#properties">Properties</a></li>
+                    <li><a href="#map">Map View</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Property Types</h4>
+                <ul>
+                    <li><a href="#">Houses</a></li>
+                    <li><a href="#">Apartments</a></li>
+                    <li><a href="#">Villas</a></li>
+                    <li><a href="#">Condos</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Info</h4>
+                <ul>
+                    <li>📍 123 Luxury Lane, CA 90210</li>
+                    <li>📞 +1 (555) 123-4567</li>
+                    <li>✉️ info@luxeestates.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeEstates. All rights reserved. Made with ❤️</p>
+        </div>
+    </footer>
+
+<!-- Firebase + Script -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// إعدادات Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+  authDomain: "realestate-5462f.firebaseapp.com",
+  projectId: "realestate-5462f",
+  storageBucket: "realestate-5462f.firebasestorage.app",
+  messagingSenderId: "980302993047",
+  appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// جلب ID العقار من URL
+function getPropertyIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id"); // ?id=PROPERTY_ID
+}
+function formatPrice(price) {
+    if (price >= 1000000) return '$' + (price / 1000000).toFixed(1) + 'M';
+    return '$' + (price / 1000).toFixed(0) + 'K';
+}
+
+// عرض تفاصيل العقار
+async function loadPropertyDetails() {
+    const propertyId = getPropertyIdFromURL();
+    if (!propertyId) return console.error("Property ID not found in URL");
+
+    try {
+        const docRef = doc(db, "properties", propertyId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) return console.error("Property not found");
+
+        const property = docSnap.data();
+
+        document.getElementById("propertyTitle").textContent = property.title || "";
+        document.getElementById("propertyImage").src = property.image || "placeholder.jpg";
+        document.getElementById("propertyPrice").textContent = formatPrice(property.price) || "";
+        document.getElementById("propertyLocation").textContent = property.location || "";
+        document.getElementById("propertyDesc").textContent = property.description || "";
+        document.getElementById("propertyServices").textContent = property.Services || "";
+        document.getElementById("propertyType").textContent = `Type: ${property.type || ""}`;
+        document.getElementById("propertyBeds").textContent = `Beds: ${property.bedrooms || ""}`;
+        document.getElementById("propertyBaths").textContent = `Baths: ${property.bathrooms || ""}`;
+        document.getElementById("propertyGarage").textContent = `Garage: ${property.Garage || ""}`;
+        document.getElementById("propertyPool").textContent = `Pool: ${property.SwimmingPool || ""}`;
+        document.getElementById("propertySqft").textContent = `Sqft: ${property.sqft || ""}`;
+    } catch (e) {
+        console.error("Error loading property:", e);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadPropertyDetails);
+</script>
+<script src="js/header.js"></script>
+
+</body>
+</html>

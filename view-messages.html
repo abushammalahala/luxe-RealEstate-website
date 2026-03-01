@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - View Messages</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+<h1 >📩 Admin - Contact Messages</h1>
+
+<div class="message-container">
+    <div id="errorBox" class="error"></div>
+    <div class="messages-grid" id="messagesGrid"></div>
+    <div class="empty" id="emptyMessage" style="display:none;">
+        No messages yet.
+    </div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { 
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    deleteDoc,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+// ===== Firebase Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+  authDomain: "realestate-5462f.firebaseapp.com",
+  projectId: "realestate-5462f",
+  storageBucket: "realestate-5462f.firebasestorage.app",
+  messagingSenderId: "980302993047",
+  appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const grid = document.getElementById("messagesGrid");
+const emptyMessage = document.getElementById("emptyMessage");
+const errorBox = document.getElementById("errorBox");
+
+let currentUserIsAdmin = false;
+
+// ===== Check Auth & Admin Role =====
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        errorBox.innerHTML = "You must be logged in as Admin.";
+        return;
+    }
+
+    const userSnap = await getDoc(doc(db, "users", user.uid));
+
+    if (!userSnap.exists()) {
+        errorBox.innerHTML = "User data not found.";
+        return;
+    }
+
+    const userData = userSnap.data();
+
+    if (userData.role !== "admin") {
+        errorBox.innerHTML = "You do not have permission to view this page.";
+        return;
+    }
+
+    currentUserIsAdmin = true;
+    loadMessages();
+});
+
+// ===== Load Messages =====
+async function loadMessages() {
+
+    const q = query(
+        collection(db, "contactMessages"),
+        orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        emptyMessage.style.display = "block";
+        return;
+    }
+
+    querySnapshot.forEach((docSnap) => {
+
+        const data = docSnap.data();
+        const id = docSnap.id;
+
+        const card = document.createElement("div");
+        card.classList.add("message-card");
+
+        const date = data.createdAt?.toDate().toLocaleString() || "No date";
+
+        card.innerHTML = `
+            <div class="status-badge">${data.status || "new"}</div>
+            <h3>${data.name}</h3>
+            <p><strong>Email:</strong> ${data.email}</p>
+            <p><strong>Phone:</strong> ${data.phone || "-"}</p>
+            <p><strong>Message:</strong><br>${data.message}</p>
+            ${data.property ? `<div class="property">${data.property}</div>` : ""}
+            <div class="date">${date}</div>
+            <button class="delete-btn" onclick="removeMessage('${id}')">Delete</button>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+// ===== Delete Message with Admin Check =====
+window.removeMessage = async (id) => {
+
+    if (!currentUserIsAdmin) {
+        alert("You do not have permission!");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to delete this message?")) return;
+
+    try {
+        await deleteDoc(doc(db, "contactMessages", id));
+        location.reload();
+    } catch (err) {
+        alert("Error deleting message: " + err.message);
+    }
+};
+
+</script>
+
+</body>
+</html>

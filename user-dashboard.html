@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="index.css" rel="stylesheet">
+
+    <title>LuxeEstates - User Dashboars</title>
+
+ 
+</head>
+
+<body>
+
+    <div class="user-dashboard">
+
+        <div class="sidebar">
+            <h2><i class="fa-solid fa-building"></i>LuxeEstates</h2>
+            <a href="#"onclick="showHome()" class="home"><i class="fa-solid fa-house"></i>Home</a>
+            <a href="#" onclick="showFavorite()"><i class="fa-solid fa-heart"></i>Favorite property</a>
+            <a href="#" onclick="showForm()"><i class="fa-solid fa-user-pen"></i>Edit</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+           <div class="menu-user" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+        <div class="main" id="mainContent">
+            <div class="user-info">
+                <img id="userImage" src="https://via.placeholder.com/80">
+                <p id="userName"></p>
+            </div>
+     
+            
+            <!-- Properties Section -->
+            <div class="properties-section u-db" id="properties">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="h2-UDB">Featured Properties</h2>
+                        <p>Explore our handpicked selection of premium properties with immersive 3D views</p>
+                        <div class="accent-line"></div>
+                    </div>
+                    <div class="properties-grid" id="propertiesGrid">
+                        <!-- Properties will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="editForm">
+            <div class="edit-box">
+                <h2>Edit Your Profile</h2>
+
+                <input id="regUsername" placeholder="Username">
+                <input id="regEmail" placeholder="Email">
+                <input id="regPassword" placeholder="New Password">
+                <input type="file" id="regImageFile">
+                <button class="save-btn" onclick="updateProfile()">Save</button>
+                <button class="cancel-btn" onclick="hideForm()">Cancel</button>
+            </div>
+        </div>
+         <div id="favorite"  style="display: none;">
+           
+            
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updateEmail, updatePassword } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // ===== Firebase Config =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+            authDomain: "realestate-5462f.firebaseapp.com",
+            projectId: "realestate-5462f",
+            storageBucket: "realestate-5462f.appspot.com",
+            messagingSenderId: "980302993047",
+            appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ===== Elements =====
+        const userName = document.getElementById("userName");
+        const userImage = document.getElementById("userImage");
+        const mainContent = document.getElementById("mainContent");
+        const editForm = document.getElementById("editForm");
+        const regUsername = document.getElementById("regUsername");
+        const regEmail = document.getElementById("regEmail");
+        const regPassword = document.getElementById("regPassword");
+        const regImageFile = document.getElementById("regImageFile");
+
+        // ===== Load User =====
+        onAuthStateChanged(auth, async user => {
+            if (!user) {
+                location.href = "auth.html";
+                return;
+            }
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                userName.innerText = "Welcome: " + data.username;
+                userImage.src = data.image || "https://via.placeholder.com/80";
+            }
+        });
+           window.showHome = async () => {
+              mainContent.style.display = "block";
+                        document.getElementById("favorite").style.display='none'
+
+            editForm.style.display = "none";
+           }
+        // ===== Show/Hide Edit Form =====
+        window.showForm = async () => {
+            const user = auth.currentUser;
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                regUsername.value = data.username;
+                regEmail.value = user.email;
+            }
+            mainContent.style.display = "none";
+                        document.getElementById("favorite").style.display='none'
+
+            editForm.style.display = "block";
+        };
+
+        window.hideForm = () => {
+            mainContent.style.display = "block";
+            editForm.style.display = "none";
+        };
+
+        // ===== Update Profile =====
+        window.updateProfile = async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            let imageBase64 = null;
+            const file = regImageFile.files[0];
+            if (file) {
+                imageBase64 = await new Promise((res, rej) => {
+                    const reader = new FileReader();
+                    reader.onload = () => res(reader.result);
+                    reader.onerror = e => rej(e);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const data = { username: regUsername.value };
+            if (imageBase64) data.image = imageBase64;
+            await updateDoc(doc(db, "users", user.uid), data);
+
+            userName.innerText = "Welcome " + regUsername.value;
+            if (imageBase64) userImage.src = imageBase64;
+
+            if (regEmail.value !== user.email) await updateEmail(user, regEmail.value);
+            if (regPassword.value.length > 5) await updatePassword(user, regPassword.value);
+
+            alert("Updated ❤️");
+            hideForm();
+        };
+
+        // ===== Logout =====
+        window.logout = async () => {
+            await signOut(auth);
+            location.href = "auth.html";
+        };
+
+        window.goToProperty = async (id) => {
+            window.location.href = `pd.html?id=${id}`;
+        }
+
+        // ===== Load Properties =====
+      async function loadPropertiesFromFirebase() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "properties"));
+        let properties = [];
+
+        querySnapshot.forEach(doc => {
+            properties.push({ id: doc.id, ...doc.data() });
+        });
+
+        renderProperties(properties); // عرض كل العقارات
+
+    } catch (error) {
+        console.error("Error loading properties:", error);
+    }
+}
+        // ===== Render Properties =====
+        function formatPrice(price) {
+            if (price >= 1000000) return '$' + (price / 1000000).toFixed(1) + 'M';
+            return '$' + (price / 1000).toFixed(0) + 'K';
+        }
+
+        function renderProperties(propertiesData) {
+            const grid = document.getElementById('propertiesGrid');
+            if (!grid) return;
+
+            grid.innerHTML = propertiesData.map(p => `
+                <div class="property-card" data-id="${p.id}">
+                    <div class="property-image">
+                        <img src="${p.image}" alt="${p.title}">
+                        <span class="property-badge">${p.type}</span>
+                        <div class="property-favorite" onclick="toggleFavorite('${p.id}')">❤️</div>
+                    </div>
+                    <div class="property-info">
+                        <div class="property-price">${formatPrice(p.price)}</div>
+                        <h3 class="property-title">${p.title}</h3>
+                        <div class="property-location">📍 ${p.location}</div>
+                        <div class="property-details">
+                            <div class="property-detail"><span>${p.bedrooms}</span> Beds</div>
+                            <div class="property-detail"><span>${p.bathrooms}</span> Baths</div>
+                            <div class="property-detail"><span>${p.sqft}</span> Sqft</div>
+                        </div>
+                    </div>
+                    <div class="property-actions">
+                        <button class="view-btn" onclick="goToProperty('${p.id}')">View Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+          window.showFavorite = async ()=>{
+            document.getElementById("favorite").style.display='grid'
+            mainContent.style.display='none'
+          }
+        // ===== Toggle Favorite =====
+       window.toggleFavorite = async (propertyId) => {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Please login to favorite properties ❤️");
+        return;
+    }
+
+    try {
+        const favDocRef = doc(db, "favorites", propertyId + "_" + user.uid);
+        await setDoc(favDocRef, {
+            userId: user.uid,
+            propertyId: propertyId,
+            timestamp: new Date()
+        });
+
+        alert("Added to favorites ❤️");
+
+        // إضافة العقار إلى قسم المفضلات في الصفحة
+        const propertyCard = document.querySelector(`.property-card[data-id="${propertyId}"]`);
+        if (propertyCard) {
+            const favoriteContainer = document.getElementById("favorite");
+
+            // نسخ الكارد بدون الـ onclick الأساسي للـ ❤️
+            const clone = propertyCard.cloneNode(true);
+            clone.querySelector(".property-favorite").remove(); // إزالة أي button toggle داخل الكارد
+            favoriteContainer.appendChild(clone);
+        }
+
+    } catch (err) {
+        console.error("Error favoriting property:", err);
+    }
+};
+
+        // ===== Initialize Page =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPropertiesFromFirebase();
+        });
+
+    </script>
+    <script src="js/inde.js"></script>
+    <script src="js/header.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const id = new URLSearchParams(location.search).get("id");
+
+    async function load() {
+        const snap = await getDoc(doc(db, "properties", id));
+        const p = snap.data();
+
+        title.value = p.title;
+        price.value = p.price;
+        image.value = p.image;
+        description.value = p.description;
+    }
+
+    window.updateProperty = async () => {
+        await updateDoc(doc(db, "properties", id), {
+            title: title.value,
+            price: parseInt(price.value),
+            image: image.value,
+            description: description.value
+        });
+
+        alert("Updated");
+        location.href = "dashboard.html";
+    }
+
+    load();
+</script>

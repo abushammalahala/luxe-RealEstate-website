@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeEstates - Find Your Dream Home in 3D</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="index.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <a href="#" class="logo">
+            <div class="logo-icon">🏠</div>
+            Luxe<span>Estates</span>
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#hero">Home</a></li>
+                <li><a href="properties.html">Properties</a></li>
+
+                <li><a href="#map">Map</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <a href="auth.html" class="cta-btn">login / Register</a>
+        </nav>
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                ✨ Over <span>2,500+</span> Properties Available
+            </div>
+            <h1>Find Your Dream House<br><span>Before Any One Else Dose!</span></h1>
+            <p>Experience properties like never before with our immersive 3D viewing technology. Your perfect home is
+                just a click away.</p>
+            <button class="Quik-Search" onclick="Q_search()"> Quik Search</button>
+
+        </div>
+        <!-- Filters Section -->
+        <div class="filters-section" id="filters">
+            <div class="filters-container">
+                <span id="cancel" onclick="cancel()"> X</span>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Location</label>
+                        <select id="filterLocation">
+                            <option value="">All Locations</option>
+                            <option value="Beverly Hills, CA">Beverly Hills, CA</option>
+                            <option value="Miami Beach, FL">Miami Beach, FL</option>
+                            <option value="Manhattan, NY">Manhattan, NY</option>
+                            <option value="Malibu, CA">Malibu, CA</option>
+                            <option value="Aspen, CO">Aspen, CO</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Property Type</label>
+                        <select id="filterType">
+                            <option value="">All Types</option>
+                            <option value="house">House</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="villa">Villa</option>
+                            <option value="condo">Condo</option>
+                            <option value="Office">Office</option>
+                            <option value="Land">Land</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Price Range</label>
+                        <input type="range" id="filterPrice" min="0" max="5000000" step="50000" value="5000000">
+                        <div class="price-display">
+                            <span>$0</span>
+                            <span id="priceValue">$5,000,000</span>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Bedrooms</label>
+                        <select id="filterBedrooms">
+                            <option value="" id="Bed">Any</option>
+                            <option value="2">2+</option>
+                            <option value="3">3+</option>
+                            <option value="4">4+</option>
+                            <option value="5">5+</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Bathrooms</label>
+                        <select id="filterBathrooms">
+                            <option value="" id="Bath">Any</option>
+                            <option value="2">2+</option>
+                            <option value="3">3+</option>
+                            <option value="4">4+</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn apply" onclick="applyFilters()">Apply Filters</button>
+                    <button class="filter-btn reset" onclick="resetFilters()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="scroll-indicator">
+            <span></span>
+        </div>
+    </section>
+
+
+    <!-- Properties Section -->
+    <section class="properties-section" id="properties">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Properties</h2>
+                <p>Explore our handpicked selection of premium properties with immersive 3D views</p>
+                <div class="accent-line"></div>
+            </div>
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Properties will be rendered here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explore by Location</h2>
+                <p>Find properties in your desired neighborhood with our interactive map</p>
+                <div class="accent-line"></div>
+            </div>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </section>
+    <!-- about section-->
+<section class="about-section">
+    <div class="about-container">
+
+        <span class="small-title">ABOUT US</span>
+
+        <h1>About <span>Luxe Estates</span></h1>
+
+        <p class="description">
+            Luxe Estates is an international associate of Savills, one of the world’s leading property agents.
+            Founded on principles of honesty, reliability, and professionalism, we deliver outstanding
+            service backed by over 30 years of experience.
+        </p>
+
+        <div class="stats">
+
+            <div class="stat-box">
+                <h2>700<span>+</span></h2>
+                <h3>Savills Associate Offices</h3>
+                <p>Connected to one of the largest real estate networks in the world.</p>
+            </div>
+
+            <div class="stat-box">
+                <h2>30<span>+</span></h2>
+                <h3>Years of Experience</h3>
+                <p>Led by seasoned professionals with decades of industry knowledge.</p>
+            </div>
+
+            <div class="stat-box">
+                <h2>3</h2>
+                <h3>Offices in Cyprus</h3>
+                <p>Strategically located to serve clients across the island.</p>
+            </div>
+
+            <div class="stat-box">
+                <h2>1</h2>
+                <h3>Global Network</h3>
+                <p>Linking Cyprus to buyers and investors around the world.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+    <!-- Testimonials -->
+    <section>
+        <div class="testimonials">
+            <div class="section-header">
+                <h2>Customer Feedback</h2>
+                <p class="subtitle">What Our Clients Say</p>
+                <div class="accent-line"></div>
+            </div>
+            <div class="testimonial">
+                <div class="left">
+                    <div class="slider-wrapper">
+                        <div class="customers">
+                            <div class="customer">
+                                <div class="customer-pro">
+                                    <img src="images/user1.jpg" alt="user1">
+                                    <h3>Jack Maxton</h3>
+                                </div>
+                                <p>Amazing service! The team helped me find my dream home quickly and easily.</p>
+                                <div class="stars">
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                </div>
+                            </div>
+                            <div class="customer">
+                                <div class="customer-pro">
+                                    <img src="images/user2.webp" alt="user2">
+                                    <h3>Sarah Wilson</h3>
+                                </div>
+                                <p>Professional team, great communication and very smooth process.</p>
+                                <div class="stars">
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                </div>
+                            </div>
+                            <div class="customer">
+                                <div class="customer-pro">
+                                    <img src="images/user3.jpg" alt="user3">
+                                    <h3>Michael Brown</h3>
+                                </div>
+                                <p>Highly recommended for anyone looking for real estate services.</p>
+                                <div class="stars">
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                    <i class="material-icons">star</i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slider-controls">
+                        <button id="prev"><i class="material-icons">chevron_left</i></button>
+                        <button id="next"><i class="material-icons">chevron_right</i></button>
+                    </div>
+                </div>
+                <div class="right">
+                    <h1>What We've Done & What Our Customers Say</h1>
+                    <p>We help people find their perfect homes and investments with trust, transparency, and
+                        professionalism. Our clients' satisfaction is our top priority.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+
+    <section class="cta">
+    <div class="overlay"></div>
+
+    <div class="cta-content">
+        <h1>Ready to Begin Your Property Journey?</h1>
+        <p>Contact us today to discuss your needs with our expert team.</p>
+
+        <a href="contact.html" class="contact-btn">Request a Consultation</a>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4>LuxeEstates</h4>
+                <p>Your trusted partner in finding the perfect property. Experience the future of real estate with our
+                    innovative 3D technology.</p>
+                <div class="footer-social">
+                    <a href="#">📘</a>
+                    <a href="#">📸</a>
+                    <a href="#">🐦</a>
+                    <a href="#">in</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#hero">Home</a></li>
+                    <li><a href="#properties">Properties</a></li>
+                    <li><a href="#map">Map View</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Property Types</h4>
+                <ul>
+                    <li><a href="#">Houses</a></li>
+                    <li><a href="#">Apartments</a></li>
+                    <li><a href="#">Villas</a></li>
+                    <li><a href="#">Condos</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Info</h4>
+                <ul>
+                    <li>📍 123 Luxury Lane, CA 90210</li>
+                    <li>📞 +1 (555) 123-4567</li>
+                    <li>✉️ info@luxeestates.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeEstates. All rights reserved. Made with ❤️</p>
+        </div>
+    </footer>
+
+
+    <!-- Firebase SDK & Firestore Setup -->
+    <script type="module">
+        // استيراد Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, getDocs, doc, getDoc
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // إعدادات مشروع Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+            authDomain: "realestate-5462f.firebaseapp.com",
+            projectId: "realestate-5462f",
+            storageBucket: "realestate-5462f.firebasestorage.app",
+            messagingSenderId: "980302993047",
+            appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+        };
+
+        // تهيئة Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // export لاستخدامه في أي مكان
+        window.firebaseApp = app;
+        window.db = db;
+
+        // =========================
+        // دوال التعامل مع Properties
+        // =========================
+
+        // إضافة عقار جديد
+        window.savePropertyToFirebase = async function (property) {
+            try {
+                const docRef = await addDoc(collection(db, "properties"), {
+                    ...property,
+                    createdAt: new Date().toISOString()
+                });
+                console.log("Property saved with ID:", docRef.id);
+                return docRef.id;
+            } catch (e) {
+                console.error("Error adding property:", e);
+                throw e;
+            }
+        };
+
+
+        // جلب جميع العقارات
+        window.getPropertiesFromFirebase = async function () {
+            try {
+
+                const querySnapshot = await getDocs(collection(db, "properties"));
+                const properties = [];
+                querySnapshot.forEach((doc) => {
+                    properties.push({ id: doc.id, ...doc.data() });
+                });
+                console.log("Properties fetched:", properties.length);
+                return properties;
+            } catch (e) {
+                console.error("Error getting properties:", e);
+                throw e;
+            }
+        };
+
+        // جلب عقار واحد حسب ID
+        window.getPropertyByIdFromFirebase = async function (propertyId) {
+            try {
+                const docRef = doc(db, "properties", propertyId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return { id: docSnap.id, ...docSnap.data() };
+                } else {
+                    console.log("No such property!");
+                    return null;
+                }
+            } catch (e) {
+                console.error("Error getting property:", e);
+                throw e;
+            }
+        };
+
+        // =========================
+        // دوال التعامل مع Contact Form
+        // =========================
+
+
+        window.toggleFavorite = async function(propertyId, btn) {
+
+    const user = auth.currentUser;
+
+    // ❌ المستخدم غير مسجل
+    if (!user) {
+        alert("Please login first to add favorites ❤️");
+        window.location.href = "auth.html";
+        return;
+    }
+
+    // ✅ المستخدم مسجل → نكمل الحفظ
+    const favQuery = query(
+        collection(db, "favorites"),
+        where("userId", "==", user.uid),
+        where("propertyId", "==", propertyId)
+    );
+
+    const snapshot = await getDocs(favQuery);
+
+    if (!snapshot.empty) {
+        await deleteDoc(doc(db, "favorites", snapshot.docs[0].id));
+        btn.classList.remove("active");
+    } else {
+        await addDoc(collection(db, "favorites"), {
+            userId: user.uid,
+            propertyId: propertyId,
+            createdAt: new Date()
+        });
+        btn.classList.add("active");
+    }
+}
+    </script>
+
+    <!-- مكتبات خارجية -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- ملفات المشروع -->
+    <script src="js/inde.js"></script>
+    <script src="js/slider.js"></script>
+    <script src="js/header.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Add Property | LuxeEstates</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
+    
+    
+</head>
+<body>
+
+    
+
+    <div class="admin-container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+                <a href="view-messages.html" class="submit-btn" style="text-align:center; display:block; margin-top:20px; text-decoration: none;">
+   View Messages
+</a>
+        <a href="admin-dashbord-property.html" class="submit-btn" style="text-align:center; display:block; margin-top:20px; text-decoration: none;">
+   View All Properties
+</a>
+        
+        <div class="admin-header">
+            <h1>Add New Property</h1>
+            <p>Fill in the property details to add it to your listings</p>
+        </div>
+
+        <form class="property-form" id="propertyForm">
+            <div class="form-group">
+                <label>Property Title *</label>
+                <input type="text" id="title" required placeholder="e.g., Modern Beachfront Villa">
+            </div>
+
+            <div class="form-group">
+                <label>Property Type *</label>
+                <select id="type" required>
+                    <option value="">Select Type</option>
+                    <option value="house">House</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="condo">Condo</option>
+                    <option value="land">Land</option>
+                    <option value="office">Office</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Price ($) *</label>
+                <input type="number" id="price" required placeholder="e.g., 4500000">
+            </div>
+
+            <div class="form-group">
+                <label>Location *</label>
+                <select id="location" required>
+                    <option value="">Select Location</option>
+                    <option value="Beverly Hills, CA">Beverly Hills, CA</option>
+                    <option value="Miami Beach, FL">Miami Beach, FL</option>
+                    <option value="Manhattan, NY">Manhattan, NY</option>
+                    <option value="Malibu, CA">Malibu, CA</option>
+                    <option value="Aspen, CO">Aspen, CO</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="number" id="lat" step="0.0001" placeholder="e.g., 34.0259">
+            </div>
+
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="number" id="lng" step="0.0001" placeholder="e.g., -118.7798">
+            </div>
+
+            <div class="form-group">
+                <label>Bedrooms</label>
+                <input type="number" id="bedrooms" placeholder="e.g., 5">
+            </div>
+
+            <div class="form-group">
+                <label>Bathrooms</label>
+                <input type="number" id="bathrooms" placeholder="e.g., 4">
+            </div>
+
+            <div class="form-group">
+                <label>Garage</label>
+                <input type="text" id="garage" placeholder="e.g., 3 Cars">
+            </div>
+
+            <div class="form-group">
+                <label>Swimming Pool</label>
+                <select id="swimmingPool">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Parking Spots</label>
+                <input type="text" id="parking" placeholder="e.g., 2 Spots">
+            </div>
+
+            <div class="form-group">
+                <label>Square Feet</label>
+                <input type="number" id="sqft" placeholder="e.g., 6500">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Image URL *</label>
+                <input type="url" id="image" required placeholder="https://images.unsplash.com/...">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Description *</label>
+                <textarea id="description" required placeholder="Describe the property..."></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Services & Amenities</label>
+                <textarea id="services" placeholder="List services and amenities..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Add Property</button>
+            
+            <div class="form-message" id="formMessage"></div>
+        </form>
+    </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyBvrWq6iIjoKgvN6yP21l9cTl1Ud1-2C6c",
+    authDomain: "realestate-5462f.firebaseapp.com",
+    projectId: "realestate-5462f",
+    storageBucket: "realestate-5462f.firebasestorage.app",
+    messagingSenderId: "980302993047",
+    appId: "1:980302993047:web:10238081ce6a8a5727bbd2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// حماية صفحة الادمن
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "auth.html";
+        return;
+    }
+
+    const userSnap = await getDoc(doc(db, "users", user.uid));
+
+    if (!userSnap.exists() || userSnap.data().role !== "admin") {
+        alert("Access denied. Admins only.");
+        window.location.href = "index.html";
+    }
+});
+
+const params = new URLSearchParams(window.location.search);
+const editId = params.get("id");
+
+// DOM Elements
+const propertyForm = document.getElementById('propertyForm');
+const submitBtn = document.getElementById('submitBtn');
+const formMessage = document.getElementById('formMessage');
+
+// إذا في ID، جلب بيانات العقار وملء الحقول
+if(editId){
+    submitBtn.textContent = 'Update Property';
+    async function loadProperty(){
+        const snap = await getDoc(doc(db,"properties",editId));
+        if(snap.exists()){
+            const p = snap.data();
+            document.getElementById('title').value = p.title || '';
+            document.getElementById('type').value = p.type || '';
+            document.getElementById('price').value = p.price || '';
+            document.getElementById('location').value = p.location || '';
+            document.getElementById('lat').value = p.lat || '';
+            document.getElementById('lng').value = p.lng || '';
+            document.getElementById('bedrooms').value = p.bedrooms || '';
+            document.getElementById('bathrooms').value = p.bathrooms || '';
+            document.getElementById('garage').value = p.Garage || '';
+            document.getElementById('swimmingPool').value = p.SwimmingPool || 'No';
+            document.getElementById('parking').value = p.Parking || '';
+            document.getElementById('sqft').value = p.sqft || '';
+            document.getElementById('image').value = p.image || '';
+            document.getElementById('description').value = p.description || '';
+            document.getElementById('services').value = p.Services || '';
+        }
+    }
+    loadProperty();
+}
+
+// التعامل مع حفظ أو تحديث العقار
+propertyForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = editId ? 'Updating...' : 'Saving...';
+
+    const propertyData = {
+        title: document.getElementById('title').value,
+        type: document.getElementById('type').value,
+        price: parseInt(document.getElementById('price').value),
+        location: document.getElementById('location').value,
+        lat: parseFloat(document.getElementById('lat').value) || 0,
+        lng: parseFloat(document.getElementById('lng').value) || 0,
+        bedrooms: parseInt(document.getElementById('bedrooms').value) || 0,
+        bathrooms: parseInt(document.getElementById('bathrooms').value) || 0,
+        Garage: document.getElementById('garage').value || 'N/A',
+        SwimmingPool: document.getElementById('swimmingPool').value,
+        Parking: document.getElementById('parking').value || 'N/A',
+        sqft: parseInt(document.getElementById('sqft').value) || 0,
+        image: document.getElementById('image').value,
+        description: document.getElementById('description').value,
+        Services: document.getElementById('services').value,
+        updatedAt: new Date().toISOString()
+    };
+
+    try{
+        if(editId){
+            await updateDoc(doc(db,"properties",editId), propertyData);
+            formMessage.textContent = 'Property updated successfully!';
+        } else {
+            propertyData.createdAt = new Date().toISOString();
+            const docRef = await addDoc(collection(db,"properties"), propertyData);
+            formMessage.textContent = 'Property added successfully! ID: ' + docRef.id;
+        }
+        formMessage.className = 'form-message success';
+        setTimeout(()=> formMessage.className='form-message',5000);
+    } catch(error){
+        console.error(error);
+        formMessage.textContent = 'Error: ' + error.message;
+        formMessage.className = 'form-message error';
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = editId ? 'Update Property' : 'Add Property';
+});
+</script>
+</body>
+</html>
